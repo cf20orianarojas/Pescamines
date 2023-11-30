@@ -15,6 +15,7 @@ function iniciarPartida() {
 
     crearTaulell(fi, col);
     setMines();
+    calculaAdjacents();
 }
 
 // /*crearà una taula dinàmica del número de files per el número de columnes especificat abans.
@@ -24,8 +25,8 @@ function crearTaulell(fi, col) {
     for(let i = 0; i < fi; i++) {
         taulell+="<tr>";
         for(let j = 0; j < col; j++) {
-           taulell+=`<td id="${i}-${j}" data-mina="false" data-num-mines=0 onclick="obreCasella(${i}, ${j})">
-                        <img src="./img_pescamines/fons20px.jpg" />
+           taulell+=`<td id="${i}-${j}" data-mina="false" data-num-mines="0" data-estat="tancada" onclick="obreCasella(${i}, ${j})">
+                        <img src="./img_pescamines/fons20px.jpg" oncontextmenu="posaBandera(${i}, ${j})"  />
                     </td>`;
         }
         taulell+="</tr>";
@@ -36,12 +37,45 @@ function crearTaulell(fi, col) {
 
 // Al crear el onclick del img en format text, passar-li els paràmetres i, j.
 function obreCasella(x, y) {
-    console.log(`${x}-${y}`);
-    document.getElementById(`${x}-${y}`).innerHTML = ""; // buscar la manera de quitar la img
+    let casella = document.getElementById(`${x}-${y}`);
+    casella.innerHTML = "";
     if(esMina(x, y)) {
-        console.log("Pisaste una mina ", x, "-", y);
-        document.getElementById(`${x}-${y}`).innerHTML = '<img src=./img_"pescamines/mina20px.jpg">';
+        mostraTotesLesMines();
+        return;
+    } 
+    
+    if (!esMina(x, y)) {
+        if (casella.dataset.numMines == 0) {
+            obreCasellesZero(x, y);
+        } else {
+            casella.innerHTML = casella.dataset.numMines;
+        }
     }
+}
+
+function obreCasellesZero(x, y) {
+    let casella = document.getElementById(`${x}-${y}`);
+
+    // caso base, que existeixa, i que no estigui 'oberta'
+    if (!estaDinsTaulell(x, y) || casella.dataset.estat == 'oberta') return; 
+
+    casella.dataset.estat = 'oberta'; 
+
+    if (casella.dataset.numMines == "0") {
+        casella.innerHTML = "";
+        for (let i = x - 1; i <= x + 1; i++) {
+            for (let j = y - 1; j <= y + 1; j++) {
+                obreCasellesZero(i, j);
+            }
+        }
+    } else {
+        casella.innerHTML = casella.dataset.numMines; // Mostrar el número de minas
+    }
+}
+
+function posaBandera(x, y) {
+    let casella = document.getElementById(`${x}-${y}`);
+    casella.innerHTML = `<img src="./img_pescamines/bandera20px.jpg" onclick="treuBandera(${x}-${y})">`;
 }
 
 function setMines() { 
@@ -58,36 +92,30 @@ function setMines() {
 /* També has de crear un mètode calculaAdjacents() que recorrerà el taulell i apuntarà el número de
 mines adjacents de cada casella en una custom html property data-num-mines inicialment a cero.
 |-1,-1| |0,-1| |1,-1|
-|-1, 0|    1   |1, 0|
-|-1, 1| |0, 1| |1, 1|
-*/
-
+|-1, 0|    0   |1, 0|
+|-1, 1| |0, 1| |1, 1|   */
 function calculaAdjacents() {
-    let nMines = 0;
-    /*recorre el tablero*/
     for(let i = 0; i < fi; i++) {
         for(let j = 0; j < col; j++) {
-
-            if(!(esMina(i, j))) {
-                // recorrera las posiciones que tiene alrededor entre -1, 0, 1
-                for(let x = -1; x <= 1; x++) {
-                    for(let y = -1; y <= 1; y++) {
-                        let eX = i + x; // posició de la fila + eix X 
-                        let eY = j + y; // posició de la columna + eix Y 
-
-                        // Comprovar si la casella està dins del taulell
-                        if (eX >= 0 && eX < fi && eY >= 0 && eY < col) {
-                            // si hi ha mina, incrementa el valor de nMines
-                            if (esMina(eX, eY)) {
+            let nMines = 0;
+            if(!esMina(i, j)) {
+                for(let x = i-1; x <= i+1; x++) {
+                    for(let y = j-1; y <= j+1; y++) {
+                        if (estaDinsTaulell(x, y)) {
+                            if (esMina(x, y)) { 
                                 nMines++;
                             }
                         }
                     }
                 }
             }
-            let casella = document.getElementById(`${i}-${j}`);
+            setMinesAdjacents(i, j, nMines);
         }
     }
+}
+
+function estaDinsTaulell(eX, eY) {
+    return eX >= 0 && eX < fi && eY >= 0 && eY < col;
 }
 
 // torna un boleà de si la posició x,y hi ha una mina
@@ -99,5 +127,17 @@ function esMina(x, y) {
 // //estableix a la casella de posició x,y l’atribut del número de mines a nMinesAdjacents
 function setMinesAdjacents(x, y, nMinesAdjacents) {
     let minesAdjacents = document.getElementById(`${x}-${y}`);
-    minesAdjacents.dataset.num_mines = nMinesAdjacents;
+    minesAdjacents.dataset.numMines = nMinesAdjacents;
+}
+
+// es mostren totes les mines del taulell i un alert de que has perdut.
+function mostraTotesLesMines(x, y) {
+    for(let i = 0; i < fi; i++) {
+        for(let j = 0; j < col; j++) {
+            if (esMina(i, j)) {
+                document.getElementById(`${i}-${j}`).innerHTML = '<img src="./img_pescamines/mina20px.jpg">';
+            }
+        }
+    }
+    alert("Has perdut! 💥");
 }
