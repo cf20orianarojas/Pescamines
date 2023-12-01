@@ -21,6 +21,7 @@ function iniciarPartida() {
 // /*crearà una taula dinàmica del número de files per el número de columnes especificat abans.
 // Cada cel·la tindrà una custom html property data-mina = "false" i contindrà una imatge fons20px.jpg. */
 function crearTaulell(fi, col) {
+    document.querySelector("button").innerHTML= "Iniciar Partida";
     let taulell = "<table>";
     for(let i = 0; i < fi; i++) {
         taulell+="<tr>";
@@ -35,21 +36,27 @@ function crearTaulell(fi, col) {
     document.getElementById("taulell").innerHTML = taulell;
 }
 
-// Al crear el onclick del img en format text, passar-li els paràmetres i, j.
+// Obre les caselles onclick
 function obreCasella(x, y) {
     let casella = document.getElementById(`${x}-${y}`);
-    casella.innerHTML = "";
+    
     if(esMina(x, y)) {
         mostraTotesLesMines();
+        alert("Has perdut! 💥");
+        document.querySelector("button").innerHTML= "Iniciar Nova Partida";
         return;
-    } 
-    
-    if (!esMina(x, y)) {
+    } else {
         if (casella.dataset.numMines == 0) {
             obreCasellesZero(x, y);
         } else {
+            casella.dataset.estat = 'oberta'; 
             casella.innerHTML = casella.dataset.numMines;
         }
+    }
+    // comprova si ha guanyat la partida
+    if (haGuanyat()) {
+        alert('Has guanyat! ');
+        return;
     }
 }
 
@@ -77,6 +84,10 @@ function posaBandera(x, y) {
     let casella = document.getElementById(`${x}-${y}`);
     casella.innerHTML = `<img src="./img_pescamines/bandera20px.jpg" onclick="treuBandera(${x}-${y})">`;
 }
+
+// function treuBandera(x, y) {
+//     document.getElementById(`${x}-${y}`).innerHTML=`<img src="./img_pescamines/fons20px.jpg" onclick="obreCasella(${x}, ${i})"/>`;
+// }
 
 function setMines() { 
     let minesTotals = Math.floor((fi*col)*0.17); // calcula el 17% de les caselles totals.
@@ -131,7 +142,7 @@ function setMinesAdjacents(x, y, nMinesAdjacents) {
 }
 
 // es mostren totes les mines del taulell i un alert de que has perdut.
-function mostraTotesLesMines(x, y) {
+function mostraTotesLesMines() {
     for(let i = 0; i < fi; i++) {
         for(let j = 0; j < col; j++) {
             if (esMina(i, j)) {
@@ -139,5 +150,19 @@ function mostraTotesLesMines(x, y) {
             }
         }
     }
-    alert("Has perdut! 💥");
+}
+
+function haGuanyat() {
+    let guanyat = true;
+    for(let i = 0; i < fi; i++) {
+        for(let j = 0; j < col; j++) {
+            let casella = document.getElementById(`${i}-${j}`);
+            if (! esMina(i, j)) {
+                if (casella.dataset.estat == "tancada") {
+                    guanyat = false;
+                }
+            }
+        }
+    }
+    return guanyat;
 }
