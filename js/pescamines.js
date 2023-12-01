@@ -157,9 +157,10 @@ function haGuanyat() {
     for(let i = 0; i < fi; i++) {
         for(let j = 0; j < col; j++) {
             let casella = document.getElementById(`${i}-${j}`);
-            if (esMina(i, j)) continue;
-            if (casella.dataset.estat == "tancada") {
-                guanyat = false;
+            if (! esMina(i, j)) {
+                if (casella.dataset.estat == "tancada") {
+                    guanyat = false;
+                }
             }
         }
     }
