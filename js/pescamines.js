@@ -85,9 +85,9 @@ function posaBandera(x, y) {
     casella.innerHTML = `<img src="./img_pescamines/bandera20px.jpg" onclick="treuBandera(${x}-${y})">`;
 }
 
-// function treuBandera(x, y) {
-//     document.getElementById(`${x}-${y}`).innerHTML=`<img src="./img_pescamines/fons20px.jpg" onclick="obreCasella(${x}, ${i})"/>`;
-// }
+function treuBandera(x, y) {
+    document.getElementById(`${x}-${y}`).innerHTML=`<img src="./img_pescamines/fons20px.jpg" onclick="obreCasella(${x}, ${i})"/>`;
+}
 
 function setMines() { 
     let minesTotals = Math.floor((fi*col)*0.17); // calcula el 17% de les caselles totals.
